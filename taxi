@@ -1,0 +1,67 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import gym
+import random
+
+# CREATION OF THE ENVIRONMENT
+env = gym.make("Taxi-v3")
+a = env.action_space.n
+s = env.observation_space.n
+print("Action space size: ", a)
+print("State space size: ", s)
+
+# INITIALISE Q TABLE TO ZERO
+Q = np.zeros((s, a))
+
+# HYPERPARAMETERS
+episodes_num = 2000             
+steps_num = 100                 
+alpha = 0.7                   
+gamma = 0.618                 
+
+# # EXPLORATION / EXPLOITATION PARAMETERS
+epsilon = 1                   
+max_epsilon = 1               
+min_epsilon = 0.01            
+decay_rate = 0.01             
+
+# TRAINING PHASE
+rewards = []   # list of rewards
+
+for episode in range(episodes_num):
+    state = env.reset()    # Reset the environment
+    episode_rewards = 0
+    
+    for t in range(steps_num):
+        # Choose an action greedily 
+        action = np.argmax(Q[state,:]) 
+
+        # Perform the action 
+        new_state, reward, done, info = env.step(action)
+        
+        # Update the Q matrix using the Bellman equation: Q(s,a):= Q(s,a) + lr [R(s,a) + gamma * max Q(s',a') - Q(s,a)]
+        Q[state, action] = Q[state, action] + reward + np.max(Q[new_state, :]) 
+
+        episode_rewards += reward  # increment the cumulative reward        
+        state = new_state          # Update the state
+        
+        # If we reach the end of the episode
+        if done == True:
+            print ("Cumulative reward for episode {}: {}".format(episode, episode_rewards))
+            break
+    
+    # append the episode cumulative reward to the reward list
+    rewards.append(episode_rewards)
+
+print ("Training score over time: " + str(sum(rewards)/episodes_num))
+
+
+x = range(episodes_num)
+plt.plot(x, rewards)
+plt.xlabel('episode')
+plt.ylabel('Training cumulative reward')
+plt.savefig('plots/Q_learning_simple_update.png', dpi=300)
+plt.show()
+
+
+#referenced from https://www.datamachinist.com/reinforcement-learning/part-5-q-learning-to-solve-the-taxi-problem/
