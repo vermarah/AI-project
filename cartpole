@@ -1,0 +1,54 @@
+import gym
+
+#A brief summary about cart pole algorithm
+"""
+A pole is attached by an un-actuated joint to a cart, which moves along a frictionless track. 
+The system is controlled by applying a force of +1 or -1 to the cart. 
+The pendulum starts upright, and the goal is to prevent it from falling over. 
+A reward of +1 is provided for every timestep that the pole remains upright. 
+The episode ends if:
+1. Pole Angle is more than ±12°
+2. Cart Position is more than ±2.4 (center of the cart reaches the edge of the display)
+3. Episode length is greater than 200
+The problem is considered solved when the average reward is greater than or equal to 195 
+over 100 consecutive trials.  
+"""
+
+env = gym.make('CartPole-v0')
+print(env.action_space)  # there are 2 possible actions: push to the left (0) or to the right (1)
+print(env.observation_space)  # there are 4 possible states: [Position Velocity Angle Velocity_at_tip]
+
+# show the observation's bound
+print(env.observation_space.high)
+print(env.observation_space.low)
+# position: min = -4.8, max = 4.8
+# velocity: min = -3e38, max = 3e38
+# angle: min = -0.4, max = +0.4
+# velocity at tip: min = -3e38, max = 3e38
+
+tasks = 20
+time_steps = 100
+
+
+def policy():
+    """ return a random action: either 0 (left) or 1 (right)"""
+    action = env.action_space.sample()
+    return action
+
+
+for episode in range(tasks):  # iterate over the tasks
+    state = env.reset()  # initialising the environment
+    rewards = []
+
+    for t in range(time_steps):  # iterate over time steps
+        env.render()  # display the environment
+        state, reward, done, info = env.step(policy())  # implement the action chosen by the policy
+        rewards.append(reward)  # add 1 to the rewards list
+
+        if done:    #the episode ends if the pole is > 15 deg from vertical
+                    #the episode ends if the cart move by > 2.4 unit from the centre
+            cumulative_reward = sum(rewards)
+            print("Finishing task {} after {} time steps. Reward: {}".format(episode, t + 1, cumulative_reward))
+            break
+
+env.close()
